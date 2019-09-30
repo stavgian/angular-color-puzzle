@@ -9,16 +9,37 @@ import { Cell } from "./models/Cell";
 export class AppComponent implements OnInit {
   title: string = "color-game";
   size: number = 5;
+  boardSize: number = 6;
   startCoordinates: any;
   activeColor: string;
-  colors = ["red", "orange", "blue"];
+  currentColor: string;
+  colors = [
+    {
+      rgb: "rgb(255, 50, 50)", //red
+      symbol: "❤️"
+    },
+    {
+      rgb: "rgb(24, 187, 255)", //blue
+      symbol: "🔷"
+    },
+    {
+      rgb: "rgb(255, 224, 17)", //yellow
+      symbol: "⭐️"
+    },
+    {
+      rgb: "rgb(51, 153, 68)", //green
+      symbol: "🍀"
+    }
+  ];
   queue = [];
   board = [];
+  clicks: number = 0;
   testBoard = [];
+  solved = false;
 
   constructor() {
     this.startCoordinates = [0, 0];
-    this.board = this.initBoard(this.size);
+    this.generateGameBoard();
   }
 
   ngOnInit(): void {
@@ -27,23 +48,137 @@ export class AppComponent implements OnInit {
     console.log(this.board);
   }
 
-  initBoard(size) {
-    let result = [];
-    for (let i = 0; i < size; i++) {
-      result[i] = [];
-      for (let j = 0; j < size; j++) {
-        result[i][j] = {
-          x: i,
-          y: j,
-          color: this.randomColor(),
-          value: "Empty"
-        };
-      }
+  generateGameBoard() {
+    const x = this.boardSize;
+    const board = [];
+    let key = 1;
+    for (let i = 0; i < x * x; i++) {
+      const randomColor = Math.floor(Math.random() * this.colors.length);
+      board.push({
+        color: this.colors[randomColor],
+        key: key,
+        absorbed: false
+      });
+      key++;
     }
-    result[0][0].value = "Start";
-    this.activeColor = result[0][0].color;
-    return result;
+
+    this.board = board;
+    this.currentColor = board[0].color.rgb;
+    this.clicks = 0;
+
+    console.log(this.board);
   }
+
+  getTheAbsorbed = () => {
+    const size = this.boardSize;
+    let currentPool = [];
+    const roundup = () => {
+      this.board.forEach((tile, i) => {
+        if (
+          ((tile.color.rgb == this.currentColor &&
+            ((i % size != 0 && currentPool.includes(this.board[i - 1])) ||
+              ((i + 1) % size != 0 &&
+                currentPool.includes(this.board[i + 1])) ||
+              (this.board[i + size] &&
+                currentPool.includes(this.board[i + size])) ||
+              (this.board[i - size] &&
+                currentPool.includes(this.board[i - size])))) ||
+            i === 0) &&
+          !currentPool.includes(tile)
+        ) {
+          currentPool.push(tile);
+          roundup();
+        }
+      });
+    };
+    roundup();
+    return currentPool;
+  };
+
+  handleClick = e => {
+    const clicked = e ? e.target.style.backgroundColor : this.currentColor;
+    console.log(clicked);
+
+    const size = this.boardSize;
+    if (clicked != this.currentColor || !e) {
+      const prevPool = this.getTheAbsorbed();
+      const currentPool = this.propagate(e, prevPool);
+
+      const newBoard = this.board.map((tile, i) => {
+        if (currentPool.includes(tile)) {
+          return {
+            color: { rgb: clicked, symbol: this.returnSymbol(clicked) },
+            key: tile.key,
+            absorbed: true
+          };
+        } else {
+          return tile;
+        }
+      });
+      this.board = newBoard;
+      this.currentColor = clicked;
+      this.clicks = e ? this.clicks + 1 : this.clicks;
+
+      this.endgameCheck();
+    } else {
+      console.log("The corner is already the clicked color. Choose another.");
+    }
+  };
+
+  setGameBoardStyle() {
+    return {
+      "grid-template-columns": `repeat(${this.boardSize}, 1fr)`,
+      "grid-template-rows": `repeat(${this.boardSize}, 1fr)`
+    };
+  }
+  endgameCheck() {
+    const size = this.boardSize;
+    setTimeout(() => {
+      const absorbed = this.board.filter(tile => {
+        if (tile.color.rgb == this.currentColor) {
+          return tile.color.rgb;
+        } else {
+          return;
+        }
+      });
+      if (absorbed.length === size * size) {
+        alert(
+          `You won a ${size}x${size} board in ${this.clicks} clicks! (Hint: refresh to start a new game, or change the "size" constant at the top of the JS window to a different number!)`
+        );
+      }
+    }, 200);
+  }
+
+  returnSymbol = match => {
+    let symbol;
+    this.colors.filter(color => {
+      color.rgb == match ? (symbol = color.symbol) : null;
+    });
+    return symbol;
+  };
+
+  propagate = (e, arr) => {
+    const size = this.boardSize;
+    const color = e ? e.target.style.backgroundColor : this.currentColor;
+    const roundup = () => {
+      this.board.forEach((tile, i) => {
+        if (
+          ((tile.color.rgb == color &&
+            ((i % size != 0 && arr.includes(this.board[i - 1])) ||
+              ((i + 1) % size != 0 && arr.includes(this.board[i + 1])) ||
+              (this.board[i + size] && arr.includes(this.board[i + size])) ||
+              (this.board[i - size] && arr.includes(this.board[i - size])))) ||
+            i === 0) &&
+          !arr.includes(tile)
+        ) {
+          arr.push(tile);
+          roundup();
+        }
+      });
+    };
+    roundup();
+    return arr;
+  };
 
   randomColor() {
     return this.colors[Math.floor(Math.random() * this.colors.length)];

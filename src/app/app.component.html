@@ -1,27 +1,23 @@
-{{ title }}
+<div id="boardApp">
+  {{ title }}
 
-<h2>{{ activeColor }}</h2>
-
-<div class="board">
-  <div class="column" *ngFor="let col of this.board">
-    <div
-      class="cell"
-      *ngFor="let cell of col"
-      (click)="onClickHandler(cell)"
-      [ngStyle]="{ 'background-color': cell.color }"
+  <h2>{{ activeColor }}</h2>
+  <div *ngFor="let color of colors">
+    <span
+      [ngStyle]="{ backgroundColor: color.rgb }"
+      (click)="handleClick($event)"
     >
-      <div>
-        {{ cell.color }} <br />
-        {{ cell.value }}
-      </div>
-    </div>
+      {{ color.rgb }}
+    </span>
   </div>
-</div>
-
-<div class="board">
-  <div class="column" *ngFor="let col of this.testBoard">
-    <div class="cell" *ngFor="let cell of col" (click)="onClickHandler(cell)">
-      <div>{{ cell }}</div>
-    </div>
+  <div id="gameBoard" [ngStyle]="setGameBoardStyle()">
+    <span
+      (click)="handleClick($event)"
+      [ngStyle]="{ backgroundColor: cell.color.rgb }"
+      class="tile"
+      *ngFor="let cell of this.board as $index"
+    >
+      <span>{{ cell.key }}</span>
+    </span>
   </div>
 </div>
