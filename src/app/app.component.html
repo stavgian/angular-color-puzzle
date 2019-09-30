@@ -3,12 +3,13 @@
 
   <div id="gameBoard" [ngStyle]="setGameBoardStyle()">
     <span
+      *ngFor="let tile of this.board as $index"
       (click)="handleClick($event)"
-      [ngStyle]="{ backgroundColor: cell.color.rgb }"
+      [ngStyle]="{ backgroundColor: tile.color.rgb }"
       class="tile"
-      *ngFor="let cell of this.board as $index"
+      [attr.key]="tile.key"
+      [attr.absorbed]="tile.absorbed"
     >
-      <span>{{ cell.key }}</span>
     </span>
   </div>
   <div class="options">
