@@ -1,15 +1,6 @@
 <div id="boardApp">
-  {{ title }}
+  <button (click)="generateGameBoard()">New Game</button>
 
-  <h2>{{ activeColor }}</h2>
-  <div *ngFor="let color of colors">
-    <span
-      [ngStyle]="{ backgroundColor: color.rgb }"
-      (click)="handleClick($event)"
-    >
-      {{ color.rgb }}
-    </span>
-  </div>
   <div id="gameBoard" [ngStyle]="setGameBoardStyle()">
     <span
       (click)="handleClick($event)"
@@ -19,5 +10,12 @@
     >
       <span>{{ cell.key }}</span>
     </span>
+  </div>
+  <div class="options">
+    <label for="">Clicks: {{ clicks }}</label>
+    <span
+      class="currentColor"
+      [ngStyle]="{ 'background-color': currentColor }"
+    ></span>
   </div>
 </div>
