@@ -1,3 +1,5 @@
+[![Netlify Status](https://api.netlify.com/api/v1/badges/2433893f-ea30-4cd6-8e0c-ab8f9489eb11/deploy-status)](https://app.netlify.com/sites/stavgian-color-game/deploys)
+
 # ColorGame
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 8.3.2.
